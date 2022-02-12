@@ -1,0 +1,52 @@
+https://www.unraveldata.com/resources/catalyst-analyst-a-deep-dive-into-sparks-optimizer/
+
+If you have three executors in a 128GB cluster, and 16GB is taken up by the cluster, that leaves 37GB per executor. However, a few GB will be required for executor overhead; the remainder is your per-executor memory. You will want to partition your data so it can be processed efficiently in the available memory.
+
+as Spark’s architecture is memory-centric Some of the most common causes of OOM are:
+*Incorrect usage of Spark
+*High concurrency
+*Inefficient queries
+*Incorrect configuration
+
+
+Out of memory issues can be observed for the driver node, executor nodes, and sometimes even for the node manager. 
+Let’s take a look at each case.
+
+**OOM at driver node--due to incorrect usage of spark
+--driver should only be considered as orchestrator(In typical deployments, driver is provisioned less memory than executors. Hence we should be careful what we are doing on the driver)
+--common causes
+1)rdd.collect()
+sparkContext.Broadcast
+low driver memory configured as per application requirement
+Misconfigurartion of spark.sql.autoBroadcastJoinThreshold. Spark uses this limit to broadcast a relation to all the nodes in case of a join operation 
+
+#inefficient code
+result = rdd.collect()
+saveToFile(result)
+
+#efficient code
+rdd.repartition(1).write.csv('/file/path')
+
+2)if you are using spark SQL and the OOM due to broadcasting relation, 
+then either you can increase driver memory if possible or reduce spark.sql.autoBroadcastJoinThreshold value so that your join operations
+will use the more memory friendly SMB join
+
+**OOM at Executor level
+some of resons
+--high concurrency
+--inefficient queries
+--incorrect configuration[spark.yarn.executor.memoryOverhead,spark.driver.memory,spark.executor.memory,If your application uses Spark caching to store some datasets, then it’s worthwhile to consider Spark’s memory manager settings.]
+Both execution & storage memory can be obtained from a configurable fraction of (total heap memory – 300MB). That setting is “spark.memory.fraction”. Default is 60%. Out of which, by default, 50% is assigned (configurable by “spark.memory.storageFraction”) to storage and rest assigned for execution.
+
+
+
+lets understand of spark execute job
+	Spark jobs are broken down into multiple stages, and each stage is further divided into tasks
+	No. of tasks depends on various factors like which stage is getting executed, which data source is getting read if it is map stage underlaying data source partitiones are honored
+For example, if a hive ORC table has 2000 partitions, then 2000 tasks get created for the map stage for reading the table assuming partition pruning did not come into play.
+If it’s a reduce stage (Shuffle stage), then spark will use either “spark.default.parallelism” setting for RDDs or “spark.sql.shuffle.partitions” for DataSets for determining the number of tasks.
+How many tasks are executed in parallel on each executor will depend on “spark.executor.cores” property. If this value is set to a higher value without due consideration to the memory,  executors may fail with OOM. Now let’s see what happens under the hood while a task is getting executed and some probable causes of OOM.
+
+https://www.element61.be/en/resource/when-use-azure-synapse-analytics-andor-azure-databricks 
+
+

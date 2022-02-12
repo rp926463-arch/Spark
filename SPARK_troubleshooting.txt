@@ -1,0 +1,32 @@
+https://www.unraveldata.com/resources/spark-troubleshooting-part-1-ten-challenges/
+
+https://duo.com/labs/tech-notes/debugging-apache-spark-pipelines
+
+https://www.infoworld.com/article/3236869/what-is-apache-spark-the-big-data-platform-that-crushed-hadoop.html
+
+
+Five Reasons Why Troubleshooting Spark Applications is Hard
+1)Memory-resident
+2)Parallel processing.
+3)Configuration options( Spark has hundreds of configuration options)
+Getting one or two critical settings right is hard; when several related settings have to be correct, guesswork becomes the norm, and over-allocation of resources, especially memory and CPUs (see below) becomes the safe strategy.
+
+Challanges at job level
+1)How many executors to assign & how many cores per executors
+2)How much memory should i allocate to each job usage
+3)How do i know if specific job is optimised
+
+Chalanges at cluster level
+4)Is my data partitioned correctly to run queries efficiently
+5)When to use autoScaling
+6)troubleshooting
+
+
+
+1)How many executors to assign & how many cores per executors
+One of the advantage of spark is parallelism, your code can run against differant data partitions in prallel workstreams
+==>How many workstram do you want running at once == no. of executors + no. of cores per executors
+e.g. Spark jobs using 3 cores to parallelize output up to 3 tasks that run simultaneously
+
+
+
